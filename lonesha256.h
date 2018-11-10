@@ -22,35 +22,35 @@ lonesha256 function:
     returns 0 on success, may return non-zero in future versions to indicate error
 */
 
-//header section
+/* header section */
 #ifndef LONESHA256_H
 #define LONESHA256_H
 
-//process configuration
+/* process configuration */
 #ifdef LONESHA256_STATIC
     #define LONESHA256_IMPLEMENTATION
     #define LSHA256DEF static
-#else //LONESHA256_EXTERN
+#else /* LONESHA256_EXTERN */
     #define LSHA256DEF extern
 #endif
 
-//includes
-#include <stddef.h> //size_t
+/* includes */
+#include <stddef.h> /* size_t */
 
-//lonesha256 declaration
+/* lonesha256 declaration */
 LSHA256DEF int lonesha256(unsigned char[32], const unsigned char*, size_t);
 
-#endif //LONESHA256_H
+#endif /* LONESHA256_H */
 
-//implementation section
+/* implementation section */
 #ifdef LONESHA256_IMPLEMENTATION
 #undef LONESHA256_IMPLEMENTATION
 
-//includes
-#include <stdint.h> //uint32_t, uint64_t
-#include <string.h> //memcpy
+/* includes */
+#include <stdint.h> /* uint32_t, uint64_t */
+#include <string.h> /* memcpy */
 
-//macros
+/* macros */
 #define S(x, n) (((((uint32_t)(x)&0xFFFFFFFFUL)>>(uint32_t)((n)&31))|((uint32_t)(x)<<(uint32_t)((32-((n)&31))&31)))&0xFFFFFFFFUL)
 #define R(x, n) (((x)&0xFFFFFFFFUL)>>(n))
 #define Gamma0(x) (S(x, 7) ^ S(x, 18) ^ R(x, 3))
@@ -71,20 +71,21 @@ LSHA256DEF int lonesha256(unsigned char[32], const unsigned char*, size_t);
     (y)[4] = (unsigned char)(((x)>>24)&255); (y)[5] = (unsigned char)(((x)>>16)&255); \
     (y)[6] = (unsigned char)(((x)>>8)&255); (y)[7] = (unsigned char)((x)&255);
 #define SHA256_COMPRESS(buff) \
-    for (int i = 0; i < 8; i++) S[i] = sha256_state[i]; \
-    for (int i = 0; i < 16; i++) LOAD32H(W[i], buff + (4*i)); \
-    for (int i = 16; i < 64; i++) W[i] = Gamma1(W[i-2]) + W[i-7] + Gamma0(W[i-15]) + W[i-16]; \
-    for (int i = 0; i < 64; i++) { \
+    for (i = 0; i < 8; i++) S[i] = sha256_state[i]; \
+    for (i = 0; i < 16; i++) LOAD32H(W[i], buff + (4*i)); \
+    for (i = 16; i < 64; i++) W[i] = Gamma1(W[i-2]) + W[i-7] + Gamma0(W[i-15]) + W[i-16]; \
+    for (i = 0; i < 64; i++) { \
         RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],i); \
         t = S[7]; S[7] = S[6]; S[6] = S[5]; S[5] = S[4]; \
         S[4] = S[3]; S[3] = S[2]; S[2] = S[1]; S[1] = S[0]; S[0] = t; \
     } \
-    for (int i = 0; i < 8; i++) sha256_state[i] = sha256_state[i] + S[i];
+    for (i = 0; i < 8; i++) sha256_state[i] = sha256_state[i] + S[i];
 
-//lonesha256 function
+/* lonesha256 function */
 LSHA256DEF int lonesha256 (unsigned char out[32], const unsigned char* in, size_t len) {
-    //writes the sha256 hash of the first "len" bytes in buffer "in" to buffer "out"
-    //returns 0 on success, may return non-zero in future versions to indicate error
+    /* writes the sha256 hash of the first "len" bytes in buffer "in" to buffer "out"
+     * returns 0 on success, may return non-zero in future versions to indicate error */
+    int i;
     const uint32_t K[64] = {
         0x428a2f98UL, 0x71374491UL, 0xb5c0fbcfUL, 0xe9b5dba5UL,
         0x3956c25bUL, 0x59f111f1UL, 0x923f82a4UL, 0xab1c5ed5UL,
@@ -109,35 +110,35 @@ LSHA256DEF int lonesha256 (unsigned char out[32], const unsigned char* in, size_
         0x510E527FUL, 0x9B05688CUL, 0x1F83D9ABUL, 0x5BE0CD19UL
     }, S[8], W[64], t0, t1, t;
     unsigned char sha256_buf[64];
-    //process input in 64 byte chunks
+    /* process input in 64 byte chunks */
     while (len >= 64) {
        SHA256_COMPRESS(in);
        sha256_length += 64 * 8;
        in += 64;
        len -= 64;
     }
-    //copy remaining bytes into sha256_buf
+    /* copy remaining bytes into sha256_buf */
     memcpy(sha256_buf, in, len);
-    //finish up (len now number of bytes in sha256_buf)
+    /* finish up (len now number of bytes in sha256_buf) */
     sha256_length += len * 8;
     sha256_buf[len++] = 0x80;
-    //pad then compress if length is above 56 bytes
+    /* pad then compress if length is above 56 bytes */
     if (len > 56) {
         while (len < 64) sha256_buf[len++] = 0;
         SHA256_COMPRESS(sha256_buf);
         len = 0;
     }
-    //pad up to 56 bytes
+    /* pad up to 56 bytes */
     while (len < 56) sha256_buf[len++] = 0;
-    //store length and compress
+    /* store length and compress */
     STORE64H(sha256_length, sha256_buf + 56);
     SHA256_COMPRESS(sha256_buf);
-    //copy output
-    for (int i = 0; i < 8; i++) {
+    /* copy output */
+    for (i = 0; i < 8; i++) {
         STORE32H(sha256_state[i], out + 4*i);
     }
-    //return
+    /* return */
     return 0;
 }
 
-#endif //LONESHA256_IMPLEMENTATION
+#endif /* LONESHA256_IMPLEMENTATION */
