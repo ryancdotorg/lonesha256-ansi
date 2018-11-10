@@ -10,6 +10,7 @@ The lonesha256 library provides portable sha256 hashing in a single function, it
 - No hard dependencies besides the standard library, making it fully portable
 - Avoids endianness issues by relying entirely on endian-agnostic operations
 - Simple hashing in a single function without any convoluted initialization
+- Plain ANSI C
 
 ## Attribution
 
